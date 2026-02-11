@@ -121,14 +121,14 @@ EOT
     os_type                             = string
     resource_group_name                 = string
     dns_name_label                      = optional(string)
-    dns_name_label_reuse_policy         = optional(string, "Unsecure")
-    ip_address_type                     = optional(string, "Public")
+    dns_name_label_reuse_policy         = optional(string) # Default: "Unsecure"
+    ip_address_type                     = optional(string) # Default: "Public"
     key_vault_key_id                    = optional(string)
     key_vault_user_assigned_identity_id = optional(string)
     network_profile_id                  = optional(string)
     priority                            = optional(string)
-    restart_policy                      = optional(string, "Always")
-    sku                                 = optional(string, "Standard")
+    restart_policy                      = optional(string) # Default: "Always"
+    sku                                 = optional(string) # Default: "Standard"
     subnet_ids                          = optional(set(string))
     tags                                = optional(map(string))
     zones                               = optional(set(string))
@@ -157,7 +157,7 @@ EOT
       name         = string
       ports = optional(object({
         port     = optional(number)
-        protocol = optional(string, "TCP")
+        protocol = optional(string) # Default: "TCP"
       }))
       readiness_probe = optional(object({
         exec              = optional(list(string))
@@ -178,7 +178,7 @@ EOT
         privilege_enabled = bool
       }))
       volume = optional(object({
-        empty_dir = optional(bool, false)
+        empty_dir = optional(bool) # Default: false
         git_repo = optional(object({
           directory = optional(string)
           revision  = optional(string)
@@ -186,7 +186,7 @@ EOT
         }))
         mount_path           = string
         name                 = string
-        read_only            = optional(bool, false)
+        read_only            = optional(bool) # Default: false
         secret               = optional(map(string))
         share_name           = optional(string)
         storage_account_key  = optional(string)
@@ -208,7 +208,7 @@ EOT
     }))
     exposed_port = optional(object({
       port     = optional(number)
-      protocol = optional(string, "TCP")
+      protocol = optional(string) # Default: "TCP"
     }))
     identity = optional(object({
       identity_ids = optional(set(string))
@@ -230,7 +230,7 @@ EOT
         privilege_enabled = bool
       }))
       volume = optional(object({
-        empty_dir = optional(bool, false)
+        empty_dir = optional(bool) # Default: false
         git_repo = optional(object({
           directory = optional(string)
           revision  = optional(string)
@@ -238,7 +238,7 @@ EOT
         }))
         mount_path           = string
         name                 = string
-        read_only            = optional(bool, false)
+        read_only            = optional(bool) # Default: false
         secret               = optional(map(string))
         share_name           = optional(string)
         storage_account_key  = optional(string)
