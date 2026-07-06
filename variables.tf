@@ -246,5 +246,207 @@ EOT
       }))
     }))
   }))
+  validation {
+    condition = alltrue([
+      for k, v in var.container_groups : (
+        length(v.name) > 0
+      )
+    ])
+    error_message = "must not be empty"
+  }
+  validation {
+    condition = alltrue([
+      for k, v in var.container_groups : (
+        v.image_registry_credential == null || (length(v.image_registry_credential.server) > 0)
+      )
+    ])
+    error_message = "must not be empty"
+  }
+  validation {
+    condition = alltrue([
+      for k, v in var.container_groups : (
+        v.image_registry_credential == null || (v.image_registry_credential.username == null || (length(v.image_registry_credential.username) > 0))
+      )
+    ])
+    error_message = "must not be empty"
+  }
+  validation {
+    condition = alltrue([
+      for k, v in var.container_groups : (
+        v.image_registry_credential == null || (v.image_registry_credential.password == null || (length(v.image_registry_credential.password) > 0))
+      )
+    ])
+    error_message = "must not be empty"
+  }
+  validation {
+    condition = alltrue([
+      for k, v in var.container_groups : (
+        v.zones == null || (length(v.zones) > 0)
+      )
+    ])
+    error_message = "must not be empty"
+  }
+  validation {
+    condition = alltrue([
+      for k, v in var.container_groups : (
+        v.init_container == null || (length(v.init_container.name) > 0)
+      )
+    ])
+    error_message = "must not be empty"
+  }
+  validation {
+    condition = alltrue([
+      for k, v in var.container_groups : (
+        v.init_container == null || (length(v.init_container.image) > 0)
+      )
+    ])
+    error_message = "must not be empty"
+  }
+  validation {
+    condition = alltrue([
+      for k, v in var.container_groups : (
+        v.init_container == null || (v.init_container.commands == null || (length(v.init_container.commands) > 0))
+      )
+    ])
+    error_message = "must not be empty"
+  }
+  validation {
+    condition = alltrue([
+      for k, v in var.container_groups : (
+        length(v.container.name) > 0
+      )
+    ])
+    error_message = "must not be empty"
+  }
+  validation {
+    condition = alltrue([
+      for k, v in var.container_groups : (
+        length(v.container.image) > 0
+      )
+    ])
+    error_message = "must not be empty"
+  }
+  validation {
+    condition = alltrue([
+      for k, v in var.container_groups : (
+        v.container.commands == null || (length(v.container.commands) > 0)
+      )
+    ])
+    error_message = "must not be empty"
+  }
+  validation {
+    condition = alltrue([
+      for k, v in var.container_groups : (
+        v.diagnostics == null || (can(regex("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$", v.diagnostics.log_analytics.workspace_id)))
+      )
+    ])
+    error_message = "must be a valid UUID"
+  }
+  validation {
+    condition = alltrue([
+      for k, v in var.container_groups : (
+        v.diagnostics == null || (length(v.diagnostics.log_analytics.workspace_key) > 0)
+      )
+    ])
+    error_message = "must not be empty"
+  }
+  validation {
+    condition = alltrue([
+      for k, v in var.container_groups : (
+        v.dns_config == null || (v.dns_config.search_domains == null || (length(v.dns_config.search_domains) > 0))
+      )
+    ])
+    error_message = "must not be empty"
+  }
+  validation {
+    condition = alltrue([
+      for k, v in var.container_groups : (
+        v.dns_config == null || (v.dns_config.options == null || (length(v.dns_config.options) > 0))
+      )
+    ])
+    error_message = "must not be empty"
+  }
+  # --- Unconfirmed validation candidates, derived from azurerm_container_group's provider source ---
+  # Not auto-enabled: either a bespoke provider validator we can't safely translate,
+  # or a path that crosses a list-typed block (needs its own for_each wrapping).
+  # Review, translate into a real validation{} block above, and delete once confirmed.
+  # path: location
+  #   source:    location.EnhancedValidate: no recognizable `if ... { errors = append(...) }` pattern - read it by hand
+  # path: resource_group_name
+  #   condition: length(value) <= 90
+  #   message:   [from resourcegroups.ValidateName: invalid when len(value) > 90]
+  #   source:    [from resourcegroups.ValidateName: invalid when len(value) > 90]
+  # path: resource_group_name
+  #   condition: !endswith(value, ".")
+  #   message:   [from resourcegroups.ValidateName: must not end with "."]
+  #   source:    [from resourcegroups.ValidateName: must not end with "."]
+  # path: resource_group_name
+  #   condition: length(value) != 0
+  #   message:   [from resourcegroups.ValidateName: invalid when len(value) == 0]
+  #   source:    [from resourcegroups.ValidateName: invalid when len(value) == 0]
+  # path: resource_group_name
+  #   source:    [from resourcegroups.ValidateName] !matched
+  # path: ip_address_type
+  #   source:    validation.StringInSlice value list is not a literal []string - likely a generated PossibleValuesFor*() helper; resolve separately
+  # path: os_type
+  #   source:    validation.StringInSlice value list is not a literal []string - likely a generated PossibleValuesFor*() helper; resolve separately
+  # path: image_registry_credential.user_assigned_identity_id
+  #   source:    [from commonids.ValidateUserAssignedIdentityID] !ok
+  # path: image_registry_credential.user_assigned_identity_id
+  #   source:    [from commonids.ValidateUserAssignedIdentityID] err != nil
+  # path: identity.type
+  #   source:    validation.StringInSlice value list is not a literal []string - likely a generated PossibleValuesFor*() helper; resolve separately
+  # path: identity.identity_ids[*]
+  #   source:    [from commonids.ValidateUserAssignedIdentityID] !ok
+  # path: identity.identity_ids[*]
+  #   source:    [from commonids.ValidateUserAssignedIdentityID] err != nil
+  # path: subnet_ids[*]
+  #   source:    [from commonids.ValidateSubnetID] !ok
+  # path: subnet_ids[*]
+  #   source:    [from commonids.ValidateSubnetID] err != nil
+  # path: tags
+  #   condition: length(value) <= 50
+  #   message:   [from tags.Validate: invalid when len(value) > 50]
+  #   source:    [from tags.Validate: invalid when len(value) > 50]
+  # path: tags
+  #   condition: length(value) <= 512
+  #   message:   [from tags.Validate: invalid when len(value) > 512]
+  #   source:    [from tags.Validate: invalid when len(value) > 512]
+  # path: tags
+  #   source:    [from tags.Validate] err != nil
+  # path: tags
+  #   condition: length(value) <= 256
+  #   message:   [from tags.Validate: invalid when len(value) > 256]
+  #   source:    [from tags.Validate: invalid when len(value) > 256]
+  # path: sku
+  #   source:    validation.StringInSlice value list is not a literal []string - likely a generated PossibleValuesFor*() helper; resolve separately
+  # path: restart_policy
+  #   source:    validation.StringInSlice value list is not a literal []string - likely a generated PossibleValuesFor*() helper; resolve separately
+  # path: dns_name_label_reuse_policy
+  #   source:    validation.StringInSlice value list is not a literal []string - likely a generated PossibleValuesFor*() helper; resolve separately
+  # path: exposed_port.port
+  #   source:    validate.PortNumber: no recognizable `if ... { errors = append(...) }` pattern - read it by hand
+  # path: exposed_port.protocol
+  #   source:    validation.StringInSlice value list is not a literal []string - likely a generated PossibleValuesFor*() helper; resolve separately
+  # path: container.cpu_limit
+  #   source:    validation.FloatAtLeast(...) - no translation rule yet, add one
+  # path: container.memory_limit
+  #   source:    validation.FloatAtLeast(...) - no translation rule yet, add one
+  # path: container.ports.port
+  #   source:    validate.PortNumber: no recognizable `if ... { errors = append(...) }` pattern - read it by hand
+  # path: container.ports.protocol
+  #   source:    validation.StringInSlice value list is not a literal []string - likely a generated PossibleValuesFor*() helper; resolve separately
+  # path: diagnostics.log_analytics.log_type
+  #   source:    validation.StringInSlice value list is not a literal []string - likely a generated PossibleValuesFor*() helper; resolve separately
+  # path: key_vault_key_id
+  #   source:    [from keyvault.ValidateNestedItemID] !ok
+  # path: key_vault_key_id
+  #   source:    [from keyvault.ValidateNestedItemID] err != nil
+  # path: key_vault_user_assigned_identity_id
+  #   source:    [from commonids.ValidateUserAssignedIdentityID] !ok
+  # path: key_vault_user_assigned_identity_id
+  #   source:    [from commonids.ValidateUserAssignedIdentityID] err != nil
+  # path: priority
+  #   source:    validation.StringInSlice value list is not a literal []string - likely a generated PossibleValuesFor*() helper; resolve separately
 }
 
