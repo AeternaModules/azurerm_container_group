@@ -1,3 +1,7 @@
+output "container_groups_id" {
+  description = "Map of id values across all container_groups, keyed the same as var.container_groups"
+  value       = { for k, v in azurerm_container_group.container_groups : k => v.id }
+}
 output "container_groups_container" {
   description = "Map of container values across all container_groups, keyed the same as var.container_groups"
   value       = { for k, v in azurerm_container_group.container_groups : k => v.container }
