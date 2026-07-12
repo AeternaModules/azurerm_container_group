@@ -132,7 +132,7 @@ EOT
     subnet_ids                          = optional(set(string))
     tags                                = optional(map(string))
     zones                               = optional(set(string))
-    container = object({
+    container = list(object({
       commands              = optional(list(string))
       cpu                   = number
       cpu_limit             = optional(number)
@@ -141,12 +141,12 @@ EOT
       liveness_probe = optional(object({
         exec              = optional(list(string))
         failure_threshold = optional(number)
-        http_get = optional(object({
+        http_get = optional(list(object({
           http_headers = optional(map(string))
           path         = optional(string)
           port         = optional(number)
           scheme       = optional(string)
-        }))
+        })))
         initial_delay_seconds = optional(number)
         period_seconds        = optional(number)
         success_threshold     = optional(number)
@@ -155,29 +155,29 @@ EOT
       memory       = number
       memory_limit = optional(number)
       name         = string
-      ports = optional(object({
+      ports = optional(list(object({
         port     = optional(number)
         protocol = optional(string) # Default: "TCP"
-      }))
+      })))
       readiness_probe = optional(object({
         exec              = optional(list(string))
         failure_threshold = optional(number)
-        http_get = optional(object({
+        http_get = optional(list(object({
           http_headers = optional(map(string))
           path         = optional(string)
           port         = optional(number)
           scheme       = optional(string)
-        }))
+        })))
         initial_delay_seconds = optional(number)
         period_seconds        = optional(number)
         success_threshold     = optional(number)
         timeout_seconds       = optional(number)
       }))
       secure_environment_variables = optional(map(string))
-      security = optional(object({
+      security = optional(list(object({
         privilege_enabled = bool
-      }))
-      volume = optional(object({
+      })))
+      volume = optional(list(object({
         empty_dir = optional(bool) # Default: false
         git_repo = optional(object({
           directory = optional(string)
@@ -191,8 +191,8 @@ EOT
         share_name           = optional(string)
         storage_account_key  = optional(string)
         storage_account_name = optional(string)
-      }))
-    })
+      })))
+    }))
     diagnostics = optional(object({
       log_analytics = object({
         log_type      = optional(string)
@@ -206,30 +206,30 @@ EOT
       options        = optional(set(string))
       search_domains = optional(set(string))
     }))
-    exposed_port = optional(object({
+    exposed_port = optional(list(object({
       port     = optional(number)
       protocol = optional(string) # Default: "TCP"
-    }))
+    })))
     identity = optional(object({
       identity_ids = optional(set(string))
       type         = string
     }))
-    image_registry_credential = optional(object({
+    image_registry_credential = optional(list(object({
       password                  = optional(string)
       server                    = string
       user_assigned_identity_id = optional(string)
       username                  = optional(string)
-    }))
-    init_container = optional(object({
+    })))
+    init_container = optional(list(object({
       commands                     = optional(list(string))
       environment_variables        = optional(map(string))
       image                        = string
       name                         = string
       secure_environment_variables = optional(map(string))
-      security = optional(object({
+      security = optional(list(object({
         privilege_enabled = bool
-      }))
-      volume = optional(object({
+      })))
+      volume = optional(list(object({
         empty_dir = optional(bool) # Default: false
         git_repo = optional(object({
           directory = optional(string)
@@ -243,133 +243,16 @@ EOT
         share_name           = optional(string)
         storage_account_key  = optional(string)
         storage_account_name = optional(string)
-      }))
-    }))
+      })))
+    })))
   }))
-  validation {
-    condition = alltrue([
-      for k, v in var.container_groups : (
-        length(v.name) > 0
-      )
-    ])
-    error_message = "must not be empty"
-  }
-  validation {
-    condition = alltrue([
-      for k, v in var.container_groups : (
-        v.image_registry_credential == null || (length(v.image_registry_credential.server) > 0)
-      )
-    ])
-    error_message = "must not be empty"
-  }
-  validation {
-    condition = alltrue([
-      for k, v in var.container_groups : (
-        v.image_registry_credential == null || (v.image_registry_credential.username == null || (length(v.image_registry_credential.username) > 0))
-      )
-    ])
-    error_message = "must not be empty"
-  }
-  validation {
-    condition = alltrue([
-      for k, v in var.container_groups : (
-        v.image_registry_credential == null || (v.image_registry_credential.password == null || (length(v.image_registry_credential.password) > 0))
-      )
-    ])
-    error_message = "must not be empty"
-  }
-  validation {
-    condition = alltrue([
-      for k, v in var.container_groups : (
-        v.zones == null || (length(v.zones) > 0)
-      )
-    ])
-    error_message = "must not be empty"
-  }
-  validation {
-    condition = alltrue([
-      for k, v in var.container_groups : (
-        v.init_container == null || (length(v.init_container.name) > 0)
-      )
-    ])
-    error_message = "must not be empty"
-  }
-  validation {
-    condition = alltrue([
-      for k, v in var.container_groups : (
-        v.init_container == null || (length(v.init_container.image) > 0)
-      )
-    ])
-    error_message = "must not be empty"
-  }
-  validation {
-    condition = alltrue([
-      for k, v in var.container_groups : (
-        v.init_container == null || (v.init_container.commands == null || (length(v.init_container.commands) > 0))
-      )
-    ])
-    error_message = "must not be empty"
-  }
-  validation {
-    condition = alltrue([
-      for k, v in var.container_groups : (
-        length(v.container.name) > 0
-      )
-    ])
-    error_message = "must not be empty"
-  }
-  validation {
-    condition = alltrue([
-      for k, v in var.container_groups : (
-        length(v.container.image) > 0
-      )
-    ])
-    error_message = "must not be empty"
-  }
-  validation {
-    condition = alltrue([
-      for k, v in var.container_groups : (
-        v.container.commands == null || (length(v.container.commands) > 0)
-      )
-    ])
-    error_message = "must not be empty"
-  }
-  validation {
-    condition = alltrue([
-      for k, v in var.container_groups : (
-        v.diagnostics == null || (can(regex("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$", v.diagnostics.log_analytics.workspace_id)))
-      )
-    ])
-    error_message = "must be a valid UUID"
-  }
-  validation {
-    condition = alltrue([
-      for k, v in var.container_groups : (
-        v.diagnostics == null || (length(v.diagnostics.log_analytics.workspace_key) > 0)
-      )
-    ])
-    error_message = "must not be empty"
-  }
-  validation {
-    condition = alltrue([
-      for k, v in var.container_groups : (
-        v.dns_config == null || (v.dns_config.search_domains == null || (length(v.dns_config.search_domains) > 0))
-      )
-    ])
-    error_message = "must not be empty"
-  }
-  validation {
-    condition = alltrue([
-      for k, v in var.container_groups : (
-        v.dns_config == null || (v.dns_config.options == null || (length(v.dns_config.options) > 0))
-      )
-    ])
-    error_message = "must not be empty"
-  }
   # --- Unconfirmed validation candidates, derived from azurerm_container_group's provider source ---
   # Not auto-enabled: either a bespoke provider validator we can't safely translate,
   # or a path that crosses a list-typed block (needs its own for_each wrapping).
   # Review, translate into a real validation{} block above, and delete once confirmed.
+  # path: name
+  #   condition: length(value) > 0
+  #   message:   must not be empty
   # path: location
   #   source:    location.EnhancedValidate: no recognizable `if ... { errors = append(...) }` pattern - read it by hand
   # path: resource_group_name
@@ -390,10 +273,19 @@ EOT
   #   source:    validation.StringInSlice value list is not a literal []string - likely a generated PossibleValuesFor*() helper; resolve separately
   # path: os_type
   #   source:    validation.StringInSlice value list is not a literal []string - likely a generated PossibleValuesFor*() helper; resolve separately
+  # path: image_registry_credential.server
+  #   condition: length(value) > 0
+  #   message:   must not be empty
   # path: image_registry_credential.user_assigned_identity_id
   #   source:    [from commonids.ValidateUserAssignedIdentityID] !ok
   # path: image_registry_credential.user_assigned_identity_id
   #   source:    [from commonids.ValidateUserAssignedIdentityID] err != nil
+  # path: image_registry_credential.username
+  #   condition: length(value) > 0
+  #   message:   must not be empty
+  # path: image_registry_credential.password
+  #   condition: length(value) > 0
+  #   message:   must not be empty
   # path: identity.type
   #   source:    validation.StringInSlice value list is not a literal []string - likely a generated PossibleValuesFor*() helper; resolve separately
   # path: identity.identity_ids[*]
@@ -404,6 +296,9 @@ EOT
   #   source:    [from commonids.ValidateSubnetID] !ok
   # path: subnet_ids[*]
   #   source:    [from commonids.ValidateSubnetID] err != nil
+  # path: zones[*]
+  #   condition: length(value) > 0
+  #   message:   must not be empty
   # path: tags
   #   condition: length(value) <= 50
   #   message:   [from tags.Validate: invalid when len(value) > 50]
@@ -428,6 +323,21 @@ EOT
   #   source:    validate.PortNumber: no recognizable `if ... { errors = append(...) }` pattern - read it by hand
   # path: exposed_port.protocol
   #   source:    validation.StringInSlice value list is not a literal []string - likely a generated PossibleValuesFor*() helper; resolve separately
+  # path: init_container.name
+  #   condition: length(value) > 0
+  #   message:   must not be empty
+  # path: init_container.image
+  #   condition: length(value) > 0
+  #   message:   must not be empty
+  # path: init_container.commands[*]
+  #   condition: length(value) > 0
+  #   message:   must not be empty
+  # path: container.name
+  #   condition: length(value) > 0
+  #   message:   must not be empty
+  # path: container.image
+  #   condition: length(value) > 0
+  #   message:   must not be empty
   # path: container.cpu_limit
   #   source:    validation.FloatAtLeast(...) - no translation rule yet, add one
   # path: container.memory_limit
@@ -436,8 +346,23 @@ EOT
   #   source:    validate.PortNumber: no recognizable `if ... { errors = append(...) }` pattern - read it by hand
   # path: container.ports.protocol
   #   source:    validation.StringInSlice value list is not a literal []string - likely a generated PossibleValuesFor*() helper; resolve separately
+  # path: container.commands[*]
+  #   condition: length(value) > 0
+  #   message:   must not be empty
+  # path: diagnostics.log_analytics.workspace_id
+  #   condition: can(regex("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$", value))
+  #   message:   must be a valid UUID
+  # path: diagnostics.log_analytics.workspace_key
+  #   condition: length(value) > 0
+  #   message:   must not be empty
   # path: diagnostics.log_analytics.log_type
   #   source:    validation.StringInSlice value list is not a literal []string - likely a generated PossibleValuesFor*() helper; resolve separately
+  # path: dns_config.search_domains[*]
+  #   condition: length(value) > 0
+  #   message:   must not be empty
+  # path: dns_config.options[*]
+  #   condition: length(value) > 0
+  #   message:   must not be empty
   # path: key_vault_key_id
   #   source:    [from keyvault.ValidateNestedItemID] !ok
   # path: key_vault_key_id

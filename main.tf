@@ -18,88 +18,91 @@ resource "azurerm_container_group" "container_groups" {
   tags                                = each.value.tags
   zones                               = each.value.zones
 
-  container {
-    commands              = each.value.container.commands
-    cpu                   = each.value.container.cpu
-    cpu_limit             = each.value.container.cpu_limit
-    environment_variables = each.value.container.environment_variables
-    image                 = each.value.container.image
-    dynamic "liveness_probe" {
-      for_each = each.value.container.liveness_probe != null ? [each.value.container.liveness_probe] : []
-      content {
-        exec              = liveness_probe.value.exec
-        failure_threshold = liveness_probe.value.failure_threshold
-        dynamic "http_get" {
-          for_each = liveness_probe.value.http_get != null ? [liveness_probe.value.http_get] : []
-          content {
-            http_headers = http_get.value.http_headers
-            path         = http_get.value.path
-            port         = http_get.value.port
-            scheme       = http_get.value.scheme
+  dynamic "container" {
+    for_each = each.value.container
+    content {
+      commands              = container.value.commands
+      cpu                   = container.value.cpu
+      cpu_limit             = container.value.cpu_limit
+      environment_variables = container.value.environment_variables
+      image                 = container.value.image
+      dynamic "liveness_probe" {
+        for_each = container.value.liveness_probe != null ? [container.value.liveness_probe] : []
+        content {
+          exec              = liveness_probe.value.exec
+          failure_threshold = liveness_probe.value.failure_threshold
+          dynamic "http_get" {
+            for_each = liveness_probe.value.http_get != null ? liveness_probe.value.http_get : []
+            content {
+              http_headers = http_get.value.http_headers
+              path         = http_get.value.path
+              port         = http_get.value.port
+              scheme       = http_get.value.scheme
+            }
           }
+          initial_delay_seconds = liveness_probe.value.initial_delay_seconds
+          period_seconds        = liveness_probe.value.period_seconds
+          success_threshold     = liveness_probe.value.success_threshold
+          timeout_seconds       = liveness_probe.value.timeout_seconds
         }
-        initial_delay_seconds = liveness_probe.value.initial_delay_seconds
-        period_seconds        = liveness_probe.value.period_seconds
-        success_threshold     = liveness_probe.value.success_threshold
-        timeout_seconds       = liveness_probe.value.timeout_seconds
       }
-    }
-    memory       = each.value.container.memory
-    memory_limit = each.value.container.memory_limit
-    name         = each.value.container.name
-    dynamic "ports" {
-      for_each = each.value.container.ports != null ? [each.value.container.ports] : []
-      content {
-        port     = ports.value.port
-        protocol = ports.value.protocol
+      memory       = container.value.memory
+      memory_limit = container.value.memory_limit
+      name         = container.value.name
+      dynamic "ports" {
+        for_each = container.value.ports != null ? container.value.ports : []
+        content {
+          port     = ports.value.port
+          protocol = ports.value.protocol
+        }
       }
-    }
-    dynamic "readiness_probe" {
-      for_each = each.value.container.readiness_probe != null ? [each.value.container.readiness_probe] : []
-      content {
-        exec              = readiness_probe.value.exec
-        failure_threshold = readiness_probe.value.failure_threshold
-        dynamic "http_get" {
-          for_each = readiness_probe.value.http_get != null ? [readiness_probe.value.http_get] : []
-          content {
-            http_headers = http_get.value.http_headers
-            path         = http_get.value.path
-            port         = http_get.value.port
-            scheme       = http_get.value.scheme
+      dynamic "readiness_probe" {
+        for_each = container.value.readiness_probe != null ? [container.value.readiness_probe] : []
+        content {
+          exec              = readiness_probe.value.exec
+          failure_threshold = readiness_probe.value.failure_threshold
+          dynamic "http_get" {
+            for_each = readiness_probe.value.http_get != null ? readiness_probe.value.http_get : []
+            content {
+              http_headers = http_get.value.http_headers
+              path         = http_get.value.path
+              port         = http_get.value.port
+              scheme       = http_get.value.scheme
+            }
           }
+          initial_delay_seconds = readiness_probe.value.initial_delay_seconds
+          period_seconds        = readiness_probe.value.period_seconds
+          success_threshold     = readiness_probe.value.success_threshold
+          timeout_seconds       = readiness_probe.value.timeout_seconds
         }
-        initial_delay_seconds = readiness_probe.value.initial_delay_seconds
-        period_seconds        = readiness_probe.value.period_seconds
-        success_threshold     = readiness_probe.value.success_threshold
-        timeout_seconds       = readiness_probe.value.timeout_seconds
       }
-    }
-    secure_environment_variables = each.value.container.secure_environment_variables
-    dynamic "security" {
-      for_each = each.value.container.security != null ? [each.value.container.security] : []
-      content {
-        privilege_enabled = security.value.privilege_enabled
+      secure_environment_variables = container.value.secure_environment_variables
+      dynamic "security" {
+        for_each = container.value.security != null ? container.value.security : []
+        content {
+          privilege_enabled = security.value.privilege_enabled
+        }
       }
-    }
-    dynamic "volume" {
-      for_each = each.value.container.volume != null ? [each.value.container.volume] : []
-      content {
-        empty_dir = volume.value.empty_dir
-        dynamic "git_repo" {
-          for_each = volume.value.git_repo != null ? [volume.value.git_repo] : []
-          content {
-            directory = git_repo.value.directory
-            revision  = git_repo.value.revision
-            url       = git_repo.value.url
+      dynamic "volume" {
+        for_each = container.value.volume != null ? container.value.volume : []
+        content {
+          empty_dir = volume.value.empty_dir
+          dynamic "git_repo" {
+            for_each = volume.value.git_repo != null ? [volume.value.git_repo] : []
+            content {
+              directory = git_repo.value.directory
+              revision  = git_repo.value.revision
+              url       = git_repo.value.url
+            }
           }
+          mount_path           = volume.value.mount_path
+          name                 = volume.value.name
+          read_only            = volume.value.read_only
+          secret               = volume.value.secret
+          share_name           = volume.value.share_name
+          storage_account_key  = volume.value.storage_account_key
+          storage_account_name = volume.value.storage_account_name
         }
-        mount_path           = volume.value.mount_path
-        name                 = volume.value.name
-        read_only            = volume.value.read_only
-        secret               = volume.value.secret
-        share_name           = volume.value.share_name
-        storage_account_key  = volume.value.storage_account_key
-        storage_account_name = volume.value.storage_account_name
       }
     }
   }
@@ -126,7 +129,7 @@ resource "azurerm_container_group" "container_groups" {
   }
 
   dynamic "exposed_port" {
-    for_each = each.value.exposed_port != null ? [each.value.exposed_port] : []
+    for_each = each.value.exposed_port != null ? each.value.exposed_port : []
     content {
       port     = exposed_port.value.port
       protocol = exposed_port.value.protocol
@@ -142,7 +145,7 @@ resource "azurerm_container_group" "container_groups" {
   }
 
   dynamic "image_registry_credential" {
-    for_each = each.value.image_registry_credential != null ? [each.value.image_registry_credential] : []
+    for_each = each.value.image_registry_credential != null ? each.value.image_registry_credential : []
     content {
       password                  = image_registry_credential.value.password
       server                    = image_registry_credential.value.server
@@ -152,7 +155,7 @@ resource "azurerm_container_group" "container_groups" {
   }
 
   dynamic "init_container" {
-    for_each = each.value.init_container != null ? [each.value.init_container] : []
+    for_each = each.value.init_container != null ? each.value.init_container : []
     content {
       commands                     = init_container.value.commands
       environment_variables        = init_container.value.environment_variables
@@ -160,13 +163,13 @@ resource "azurerm_container_group" "container_groups" {
       name                         = init_container.value.name
       secure_environment_variables = init_container.value.secure_environment_variables
       dynamic "security" {
-        for_each = init_container.value.security != null ? [init_container.value.security] : []
+        for_each = init_container.value.security != null ? init_container.value.security : []
         content {
           privilege_enabled = security.value.privilege_enabled
         }
       }
       dynamic "volume" {
-        for_each = init_container.value.volume != null ? [init_container.value.volume] : []
+        for_each = init_container.value.volume != null ? init_container.value.volume : []
         content {
           empty_dir = volume.value.empty_dir
           dynamic "git_repo" {
