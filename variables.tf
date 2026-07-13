@@ -121,14 +121,14 @@ EOT
     os_type                             = string
     resource_group_name                 = string
     dns_name_label                      = optional(string)
-    dns_name_label_reuse_policy         = optional(string) # Default: "Unsecure"
-    ip_address_type                     = optional(string) # Default: "Public"
+    dns_name_label_reuse_policy         = optional(string)
+    ip_address_type                     = optional(string)
     key_vault_key_id                    = optional(string)
     key_vault_user_assigned_identity_id = optional(string)
     network_profile_id                  = optional(string)
     priority                            = optional(string)
-    restart_policy                      = optional(string) # Default: "Always"
-    sku                                 = optional(string) # Default: "Standard"
+    restart_policy                      = optional(string)
+    sku                                 = optional(string)
     subnet_ids                          = optional(set(string))
     tags                                = optional(map(string))
     zones                               = optional(set(string))
@@ -157,7 +157,7 @@ EOT
       name         = string
       ports = optional(list(object({
         port     = optional(number)
-        protocol = optional(string) # Default: "TCP"
+        protocol = optional(string)
       })))
       readiness_probe = optional(object({
         exec              = optional(list(string))
@@ -178,7 +178,7 @@ EOT
         privilege_enabled = bool
       })))
       volume = optional(list(object({
-        empty_dir = optional(bool) # Default: false
+        empty_dir = optional(bool)
         git_repo = optional(object({
           directory = optional(string)
           revision  = optional(string)
@@ -186,7 +186,7 @@ EOT
         }))
         mount_path           = string
         name                 = string
-        read_only            = optional(bool) # Default: false
+        read_only            = optional(bool)
         secret               = optional(map(string))
         share_name           = optional(string)
         storage_account_key  = optional(string)
@@ -208,7 +208,7 @@ EOT
     }))
     exposed_port = optional(list(object({
       port     = optional(number)
-      protocol = optional(string) # Default: "TCP"
+      protocol = optional(string)
     })))
     identity = optional(object({
       identity_ids = optional(set(string))
@@ -230,7 +230,7 @@ EOT
         privilege_enabled = bool
       })))
       volume = optional(list(object({
-        empty_dir = optional(bool) # Default: false
+        empty_dir = optional(bool)
         git_repo = optional(object({
           directory = optional(string)
           revision  = optional(string)
@@ -238,7 +238,7 @@ EOT
         }))
         mount_path           = string
         name                 = string
-        read_only            = optional(bool) # Default: false
+        read_only            = optional(bool)
         secret               = optional(map(string))
         share_name           = optional(string)
         storage_account_key  = optional(string)
@@ -246,6 +246,14 @@ EOT
       })))
     })))
   }))
+  validation {
+    condition = alltrue([
+      for k, v in var.container_groups : (
+        length(v.container) >= 1
+      )
+    ])
+    error_message = "Each container list must contain at least 1 items"
+  }
   # --- Unconfirmed validation candidates, derived from azurerm_container_group's provider source ---
   # Not auto-enabled: either a bespoke provider validator we can't safely translate,
   # or a path that crosses a list-typed block (needs its own for_each wrapping).
@@ -332,6 +340,21 @@ EOT
   # path: init_container.commands[*]
   #   condition: length(value) > 0
   #   message:   must not be empty
+  # path: init_container.volume.name
+  #   condition: length(value) > 0
+  #   message:   must not be empty
+  # path: init_container.volume.mount_path
+  #   condition: length(value) > 0
+  #   message:   must not be empty
+  # path: init_container.volume.share_name
+  #   condition: length(value) > 0
+  #   message:   must not be empty
+  # path: init_container.volume.storage_account_name
+  #   condition: length(value) > 0
+  #   message:   must not be empty
+  # path: init_container.volume.storage_account_key
+  #   condition: length(value) > 0
+  #   message:   must not be empty
   # path: container.name
   #   condition: length(value) > 0
   #   message:   must not be empty
@@ -349,6 +372,39 @@ EOT
   # path: container.commands[*]
   #   condition: length(value) > 0
   #   message:   must not be empty
+  # path: container.volume.name
+  #   condition: length(value) > 0
+  #   message:   must not be empty
+  # path: container.volume.mount_path
+  #   condition: length(value) > 0
+  #   message:   must not be empty
+  # path: container.volume.share_name
+  #   condition: length(value) > 0
+  #   message:   must not be empty
+  # path: container.volume.storage_account_name
+  #   condition: length(value) > 0
+  #   message:   must not be empty
+  # path: container.volume.storage_account_key
+  #   condition: length(value) > 0
+  #   message:   must not be empty
+  # path: container.liveness_probe.exec[*]
+  #   source:    validation.NoZeroValues(...) - no translation rule yet, add one
+  # path: container.liveness_probe.http_get.path
+  #   condition: length(value) > 0
+  #   message:   must not be empty
+  # path: container.liveness_probe.http_get.port
+  #   source:    validate.PortNumber: no recognizable `if ... { errors = append(...) }` pattern - read it by hand
+  # path: container.liveness_probe.http_get.scheme
+  #   source:    validation.StringInSlice value list is not a literal []string - likely a generated PossibleValuesFor*() helper; resolve separately
+  # path: container.readiness_probe.exec[*]
+  #   source:    validation.NoZeroValues(...) - no translation rule yet, add one
+  # path: container.readiness_probe.http_get.path
+  #   condition: length(value) > 0
+  #   message:   must not be empty
+  # path: container.readiness_probe.http_get.port
+  #   source:    validate.PortNumber: no recognizable `if ... { errors = append(...) }` pattern - read it by hand
+  # path: container.readiness_probe.http_get.scheme
+  #   source:    validation.StringInSlice value list is not a literal []string - likely a generated PossibleValuesFor*() helper; resolve separately
   # path: diagnostics.log_analytics.workspace_id
   #   condition: can(regex("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$", value))
   #   message:   must be a valid UUID
