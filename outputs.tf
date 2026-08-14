@@ -9,12 +9,12 @@ output "container_groups_container" {
 }
 output "container_groups_diagnostics" {
   description = "Map of diagnostics values across all container_groups, keyed the same as var.container_groups"
-  value       = { for k, v in azurerm_container_group.container_groups : k => v.diagnostics if v.diagnostics != null && length(v.diagnostics) > 0 }
+  value       = { for k, v in azurerm_container_group.container_groups : k => one(v.diagnostics) if v.diagnostics != null && length(v.diagnostics) > 0 }
   sensitive   = true
 }
 output "container_groups_dns_config" {
   description = "Map of dns_config values across all container_groups, keyed the same as var.container_groups"
-  value       = { for k, v in azurerm_container_group.container_groups : k => v.dns_config if v.dns_config != null && length(v.dns_config) > 0 }
+  value       = { for k, v in azurerm_container_group.container_groups : k => one(v.dns_config) if v.dns_config != null && length(v.dns_config) > 0 }
 }
 output "container_groups_dns_name_label" {
   description = "Map of dns_name_label values across all container_groups, keyed the same as var.container_groups"
@@ -34,7 +34,7 @@ output "container_groups_fqdn" {
 }
 output "container_groups_identity" {
   description = "Map of identity values across all container_groups, keyed the same as var.container_groups"
-  value       = { for k, v in azurerm_container_group.container_groups : k => v.identity if v.identity != null && length(v.identity) > 0 }
+  value       = { for k, v in azurerm_container_group.container_groups : k => one(v.identity) if v.identity != null && length(v.identity) > 0 }
 }
 output "container_groups_image_registry_credential" {
   description = "Map of image_registry_credential values across all container_groups, keyed the same as var.container_groups"
